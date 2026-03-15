@@ -16,16 +16,18 @@ jobs:
       - name: Install CocoaPods
         run: |
           sudo gem install cocoapods
+          cd "حصن/src"
           pod install || echo "No Podfile or already installed"
 
       - name: Build IPA (unsigned)
         run: |
+          cd "حصن/src"
           xcodebuild \
             -workspace "حصن.xcworkspace" \
             -scheme "حصن" \
             -configuration Release \
             -sdk iphoneos \
-            -derivedDataPath build \
+            -derivedDataPath ../../build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
