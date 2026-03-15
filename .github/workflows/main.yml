@@ -42,7 +42,7 @@ jobs:
           echo "IPA created successfully!"
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: حصن-ipa
           path: output/حصن.ipa
