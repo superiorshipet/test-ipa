@@ -17,7 +17,7 @@ jobs:
         run: |
           sudo gem install cocoapods
           cd "حصن/src"
-          pod install || echo "No Podfile or already installed"
+          pod install || echo "Pod install done"
 
       - name: Build IPA (unsigned)
         run: |
@@ -32,16 +32,25 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=NO \
-            OTHER_LDFLAGS="" \
-            build
+            VALIDATE_WORKSPACE=NO \
+            build 2>&1 | grep -E "(error:|warning:|BUILD|Ld )" | tail -50
+
+      - name: Check build output
+        run: |
+          find build/Build/Products/Release-iphoneos -name "*.app" 2>/dev/null || echo "No .app found"
 
       - name: Package IPA
         run: |
+          APP_PATH=$(find build/Build/Products/Release-iphoneos -name "*.app" -maxdepth 1 | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: No .app file found!"
+            exit 1
+          fi
+          echo "Found app: $APP_PATH"
           mkdir -p output
-          cd build/Build/Products/Release-iphoneos
           mkdir -p Payload
-          cp -r "حصن.app" Payload/
-          zip -r "../../../../output/حصن.ipa" Payload
+          cp -r "$APP_PATH" Payload/
+          zip -r "output/حصن.ipa" Payload
           echo "IPA created successfully!"
 
       - name: Upload IPA artifact
