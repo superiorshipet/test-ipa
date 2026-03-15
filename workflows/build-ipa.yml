@@ -1,0 +1,49 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install CocoaPods
+        run: |
+          sudo gem install cocoapods
+          pod install || echo "No Podfile or already installed"
+
+      - name: Build IPA (unsigned)
+        run: |
+          xcodebuild \
+            -workspace "حصن.xcworkspace" \
+            -scheme "حصن" \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            build
+
+      - name: Package IPA
+        run: |
+          mkdir -p output
+          cd build/Build/Products/Release-iphoneos
+          mkdir -p Payload
+          cp -r "حصن.app" Payload/
+          zip -r "../../../../output/حصن.ipa" Payload
+          echo "IPA created successfully!"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: حصن-ipa
+          path: output/حصن.ipa
+          retention-days: 7
